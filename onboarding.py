@@ -18,8 +18,11 @@ def main():
         sys.exit(1)
     user = sys.argv[1]
     pi = sys.argv[2] # pylint: disable=invalid-name
-    # steps:
-    #
+    # end user needs:
+    # access to the end user batch role (add to group)
+    # ability to pass the following roles/instance profile:
+    # role/fh-pi-universal-batchservice
+    # instance-profile/fh-pi-universal-batchrole
 
 if __name__ == "__main__":
     main()
