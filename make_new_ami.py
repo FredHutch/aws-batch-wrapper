@@ -83,6 +83,7 @@ def run_commands_on_instance():
     run("sudo mkdir /docker_scratch")
     run("sudo echo -e '/dev/xvdb\t/docker_scratch\text4\tdefaults\t0\t0' | sudo tee -a /etc/fstab")
     run("sudo mount /docker_scratch")
+    run("sudo chmod a+rwx /docker_scratch")
     run("sudo stop ecs")
     run("sudo rm -rf /var/lib/ecs/data/ecs_agent_data.json")
 
