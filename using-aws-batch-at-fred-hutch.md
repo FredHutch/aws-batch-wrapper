@@ -60,3 +60,5 @@ and develop your image on your own machine until it's ready to be deployed.
 # Examples
 
 # References
+
+# Future plans
