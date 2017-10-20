@@ -24,7 +24,8 @@ BATCH_SERVICE = "arn:aws:iam::{}:role/fh-pi-universal-batchservice".format(ACCOU
 
 BUCKET_ACCESS_POLICY = "arn:aws:iam::{account}:policy/fh-pi{pi}-bucket-access"
 
-END_USER_BATCH_GROUP = "arn:aws:iam::{}:group/fh-pi-end-user-batch-access".format(ACCOUNT_NUMBER)
+END_USER_BATCH_GROUP = "fh-pi-end-user-batch-access"
+PASS_ROLE_POLICY = "arn:aws:iam::{}:policy/fh_allow_passrole".format(ACCOUNT_NUMBER)
 
 if ACCOUNT_NUMBER == SCICOMP_ACCOUNT_NUMBER:
     BUCKET_PREFIX = "fh-pi-sc-"

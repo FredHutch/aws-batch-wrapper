@@ -20,14 +20,21 @@ def get_latest_scratch_ami(get_all=False):
     Get the ID of the latest AMI created by SciComp which is based on
     official ECS-compliant AMIs but has 1TB of scratch space on it.
     These AMIs will always be owned by the SciComp account and
-    have the Type: FredHutchBatchAMI tag.
+    have the Type: FredHutchBatchAMI tag. (However, tags are not
+    used in this function because they are only visible to the account
+    that created the AMI, so instead we use the image name.)
     """
     ec2 = boto3.client("ec2", region_name="us-west-2")
     scicomp_account_number = '344850189907'
     filters = [{'Name': 'owner-id', 'Values': [scicomp_account_number]},
-               {'Name': 'tag:Type', 'Values': ['FredHutchBatchAMI']}]
+               {'Name': 'name',
+                'Values': ['ECS image with 1TB non-encrypted scratch at /scratch. Created at *']}]
     got = ec2.describe_images(Filters=filters)
     sorted_amis = sorted(got['Images'], key=lambda k: k['CreationDate'])
     if get_all:
         return sorted_amis
     return sorted_amis[-1]['ImageId']
+
+# just for testing
+if __name__ == '__main__':
+    print(get_latest_scratch_ami())
