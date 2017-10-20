@@ -3,6 +3,8 @@ Convert to HTML with:
 
 pandoc using-aws-batch-at-fred-hutch.md -o using-aws-batch-at-fred-hutch.html
 
+Then paste into the HTML source window at https://bit.ly/AWSBatchAtHutch .
+
 -->
 
 # What is AWS Batch?
@@ -50,6 +52,8 @@ and develop your image on your own machine until it's ready to be deployed.
 ## Create an Automated Build in Docker Hub
 
 # Create a Job Definition
+
+# Using secrets in jobs
 
 ## Using scratch space
 
