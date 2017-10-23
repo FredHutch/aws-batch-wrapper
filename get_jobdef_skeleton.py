@@ -18,6 +18,7 @@ import json
 import re
 
 # third-party imports
+import requests
 
 # local imports
 import config
@@ -25,12 +26,17 @@ import utils
 
 
 def pi_validate(piname, pat=re.compile(r'^[a-z]{1,20}-[a-z]{1}$', re.UNICODE)):
-    """Ensure pi-name matches regex."""
+    """Ensure pi-name matches regex and actual list of PIs."""
     if not pat.match(piname):
         errmsg = ["",
                   "PI name should be lowercase last name, dash, and first initial.",
                   "example: doe-j"]
         raise argparse.ArgumentTypeError("\n".join(errmsg))
+    url = "https://toolbox.fhcrc.org/json/pi_all.json"
+    obj = requests.get(url).json()
+    pis = [x['pi_dept'].replace("_", "-") for x in obj]
+    if not piname in pis:
+        raise argparse.ArgumentTypeError("No PI named {}!".format(piname))
     return piname
 
 
