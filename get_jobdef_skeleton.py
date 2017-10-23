@@ -15,6 +15,7 @@ It will automatically fill in the following parts of a job definition JSON:
 # stdlib imports
 import argparse
 import json
+import re
 
 # third-party imports
 
@@ -23,12 +24,24 @@ import config
 import utils
 
 
+def pi_validate(piname, pat=re.compile(r'^[a-z]{1,20}-[a-z]{1}$', re.UNICODE)):
+    """Ensure pi-name matches regex."""
+    if not pat.match(piname):
+        errmsg = ["",
+                  "PI name should be lowercase last name, dash, and first initial.",
+                  "example: doe-j"]
+        raise argparse.ArgumentTypeError("\n".join(errmsg))
+    return piname
+
+
 def main():
     "do the work"
-    parser = argparse.ArgumentParser(description=\
-        "Create a partially-filled-in job definition template",
+    description = ["Create a partially-filled-in job definition template.",
+                   "See full documentation at",
+                   "https://bit.ly/AWSBatchAtHutch#create-a-job-definition"]
+    parser = argparse.ArgumentParser(description="\n".join(description),
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-p", "--pi-name", required=True,
+    parser.add_argument("-p", "--pi-name", required=True, type=pi_validate,
                         help="Your PI's last name, a dash, and first initial. Example: doe-j")
     args = parser.parse_args()
     job_role_arn = "arn:aws:iam::{}:role/fh-pi-{}-batchtask".format(config.ACCOUNT_NUMBER,
