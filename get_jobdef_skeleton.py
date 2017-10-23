@@ -47,6 +47,7 @@ def main():
                    "https://bit.ly/AWSBatchAtHutch#create-a-job-definition"]
     parser = argparse.ArgumentParser(description="\n".join(description),
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.prog = parser.prog.replace(".py", "")
     parser.add_argument("-p", "--pi-name", required=True, type=pi_validate,
                         help="Your PI's last name, a dash, and first initial. Example: doe-j")
     args = parser.parse_args()
