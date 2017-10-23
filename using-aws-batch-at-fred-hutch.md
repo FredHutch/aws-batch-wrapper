@@ -1,11 +1,36 @@
-<!--
+<div style="display: none;">
 Convert to HTML with:
 
 pandoc using-aws-batch-at-fred-hutch.md -o using-aws-batch-at-fred-hutch.html
 
-Then paste into the HTML source window at https://bit.ly/AWSBatchAtHutch .
+Then paste into the "Edit source" window at https://bit.ly/AWSBatchAtHutch .
 
--->
+</div>
+
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [What is AWS Batch?](#what-is-aws-batch)
+- [Request access](#request-access)
+- [For a user with HutchNet ID jblow and PI name peters-u, run:](#for-a-user-with-hutchnet-id-jblow-and-pi-name-peters-u-run)
+- [Create a Docker image](#create-a-docker-image)
+	- [Do you need to create your own image?](#do-you-need-to-create-your-own-image)
+	- [Getting Started](#getting-started)
+	- [Docker Installation Instructions](#docker-installation-instructions)
+- [Deploy Docker Image](#deploy-docker-image)
+	- [Create GitHub Account](#create-github-account)
+	- [Create a Docker Hub Account](#create-a-docker-hub-account)
+	- [Push your Dockerfile to a GitHub repository](#push-your-dockerfile-to-a-github-repository)
+	- [Create an Automated Build in Docker Hub](#create-an-automated-build-in-docker-hub)
+- [Create a Job Definition](#create-a-job-definition)
+- [Using secrets in jobs](#using-secrets-in-jobs)
+	- [Using scratch space](#using-scratch-space)
+- [Submit your job](#submit-your-job)
+- [Monitor job progress](#monitor-job-progress)
+- [Examples](#examples)
+- [References](#references)
+- [Future plans](#future-plans)
+
+<!-- /TOC -->
 
 # What is AWS Batch?
 
@@ -27,7 +52,26 @@ In your email, **include** the name of your PI.
 
 SciComp will contact you when your access has been granted.
 
+
+<div style="display: none;">
+scicomp people:
+
+The way to onboard a new user is to do the following:
+
+. /app/local/aws-batch-wrapper/env/bin/activate # start virtual env
+/app/local/aws-batch-wrapper/onboarding.py # show help message
+# For a user with HutchNet ID jblow and PI name peters-u, run:
+/app/local/aws-batch-wrapper/onboarding.py jblow peters-u
+
+This requires some special permissions, you probably need to
+authenticate your command-line session with MFA.
+
+</div>
+
+
 # Create a Docker image
+
+## Do you need to create your own image?
 
 ## Getting Started
 

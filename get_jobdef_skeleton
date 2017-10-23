@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# copy this script to /app/bin
+
+/app/local/aws-batch-wrapper/env/bin/python3 /app/local/aws-batch-wrapper/get_jobdef_skeleton.py $*

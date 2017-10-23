@@ -35,6 +35,20 @@ def get_latest_scratch_ami(get_all=False):
         return sorted_amis
     return sorted_amis[-1]['ImageId']
 
+
+def get_latest_docker_image():
+    """
+    Returns the full name (including tag) of the latest
+    supported Docker image supported by Fred Hutch for
+    AWS Batch jobs. It should be an image that has
+    as its ENTRYPOINT the fetch-and-run script.
+
+    For now we are just hardcoding the name as there is
+    only one image and (as of yet) no programmatic
+    way to determine which is the most recent.
+    """
+    return "fredhutch/ls2:picard.1"
+
 # just for testing
 if __name__ == '__main__':
     print(get_latest_scratch_ami())
