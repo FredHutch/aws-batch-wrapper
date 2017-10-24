@@ -34,8 +34,8 @@ def pi_validate(piname, pat=re.compile(r'^[a-z]{1,20}-[a-z]{1}$', re.UNICODE)):
         raise argparse.ArgumentTypeError("\n".join(errmsg))
     url = "https://toolbox.fhcrc.org/json/pi_all.json"
     obj = requests.get(url).json()
-    pis = [x['pi_dept'].replace("_", "-") for x in obj]
-    if not piname in pis:
+    pis = [x['pi_dept'] for x in obj]
+    if not piname.replace("-", "_") in pis:
         raise argparse.ArgumentTypeError("No PI named {}!".format(piname))
     return piname
 
