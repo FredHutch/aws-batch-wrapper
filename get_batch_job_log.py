@@ -3,8 +3,11 @@
 "Print out log output from a job"
 
 import sys
+from signal import signal, SIGPIPE, SIG_DFL
 
 import boto3
+
+signal(SIGPIPE, SIG_DFL) # see https://stackoverflow.com/a/30091579/470769
 
 def main():
     "do the work"
@@ -44,8 +47,10 @@ def main():
         next_token = result['nextForwardToken']
         args['nextToken'] = next_token
         # FIXME add option to show timestamp in a human-readable way
+        # FIXME Broken Pipe error when piping this script through head/less/more/etc
         for event in result['events']:
-            print(event['message'])
+            # print(event['message'])
+            sys.stdout.write(event['message'] + '\n')
 
 if __name__ == "__main__":
     main()
