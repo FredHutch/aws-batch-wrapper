@@ -41,19 +41,20 @@ def main():
                                         "see link above for full docs. Example: myscript.myfunc"]))
     parser.add_argument("-j", "--json",
                         help="\n".join(["Output JSON instead of running jobs. JSON can be used",
-                                        "with `aws batch submit-job --cli-input-json`."]))
+                                        "with `aws batch submit-job --cli-input-json`.",
+                                        "Makes most sense with `--numjobs 1`."]))
     parser.add_argument("-x", "--cpus",
-                        help="Number of CPUs, if overridding value in job defnition.")
+                        help="Number of CPUs, if overriding value in job defnition.")
     parser.add_argument("-m", "--memory",
-                        help="GB of memory, if overridding value in job definition.")
+                        help="GB of memory, if overriding value in job definition.")
     parser.add_argument("-p", "--parameters",
                         help="\n".join(["Parameters to replace placeholders in job definition.",
                                         "Format as a single-quoted JSON list of",
                                         "objects/dictionaries."]))
     parser.add_argument("-a", "--attempts",
-                        help="Number of retry attempts, if overridding job definition.")
+                        help="Number of retry attempts, if overriding job definition.")
     parser.add_argument("-c", "--command",
-                        help="\n".join(["Command, if overridding job definition. Example:",
+                        help="\n".join(["Command, if overriding job definition. Example:",
                                         '["echo", "hello", "world"]'])) # TODO some kind of interpolation here?
     parser.add_argument("-e", "--environment",
                         help="\n".join(["Environment to replace placeholders in job definition.",

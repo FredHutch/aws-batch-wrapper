@@ -22,7 +22,7 @@ def testfunc(obj, job_num):
         dict: `obj` modified by your custom logic.
     """
 
-    # in this example, we will tell our job to print out a custom message
+    # In this example, we will tell our job to print out a custom message
     # that includes the job iteration number.
 
     # Let's print out the input object we receive, just to see what it looks like:
@@ -37,6 +37,7 @@ def testfunc(obj, job_num):
     # change:
     print("After:")
     print(obj)
+    print()
 
     # Here we could make any other changes we want to the job object,
     # based on the job iteration number (job_num). For example,
