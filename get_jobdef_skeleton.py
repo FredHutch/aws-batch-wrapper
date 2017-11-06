@@ -44,7 +44,7 @@ def main():
     "do the work"
     description = ["Create a partially-filled-in job definition template.",
                    "See full documentation at",
-                   "https://bit.ly/AWSBatchAtHutch#create-a-job-definition"]
+                   "http://bit.ly/HutchBatchDocs/#create-a-job-definition"]
     parser = argparse.ArgumentParser(description="\n".join(description),
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.prog = parser.prog.replace(".py", "")
@@ -71,3 +71,21 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+"""
+import slbatchwrapper
+arn = "arn:aws:batch:us-west-2:064561331775:job-definition/dtenenba-scratchy:1"
+task = slbatchwrapper.BatchTask(arn)
+import batchwrapper
+oldtask = batchwrapper.BatchTask(arn)
+import sciluigi
+st = sciluigi.Task()
+task = sciluigi.new_task('botch', sciluigi.BatchTask)
+task = sciluigi.new_task('botch', slbatchwrapper.BatchTask)
+task = sciluigi.new_task('botch', slbatchwrapper.BatchTask, 'foo')
+task = sciluigi.new_task('botch', slbatchwrapper.BatchTask, 'foo', job_definition=arn)
+task
+%hist
+
+"""
