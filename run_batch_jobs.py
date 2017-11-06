@@ -20,7 +20,7 @@ def main():
     batch = boto3.client("batch")
     description = ["Start a set of AWS Batch jobs.",
                    "See full documentation at",
-                   "http://bit.ly/HutchBatchDocs/#run_batch_jobs"] # FIXME add this section to docs.........................................
+                   "http://bit.ly/HutchBatchDocs/#submitting-with-the-run_batch_job-utility"]
 
 
     # Handle command-line arguments
