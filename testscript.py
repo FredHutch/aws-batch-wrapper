@@ -3,7 +3,7 @@
 """
 An example of a custom function to use with the `run_batch_jobs` utility.
 See its full documentation at:
-https://fredhutch.github.io/aws-batch-at-hutch-docs/#submitting-with-the-run_batch_job-utility
+https://fredhutch.github.io/aws-batch-at-hutch-docs/#submitting-with-the-run_batch_jobs-utility
 """
 
 import json
