@@ -55,7 +55,7 @@ def main():
                         help="Number of retry attempts, if overriding job definition.")
     parser.add_argument("-c", "--command",
                         help="\n".join(["Command, if overriding job definition. Example:",
-                                        '["echo", "hello", "world"]'])) # TODO some kind of interpolation here?
+                                        '\'["echo", "hello world"]\''])) # TODO some kind of interpolation here?
     parser.add_argument("-e", "--environment",
                         help="\n".join(["Environment to replace placeholders in job definition.",
                                         "Format as a single-quoted JSON object/dictionary."]))
