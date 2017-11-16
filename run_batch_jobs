@@ -1,5 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env python3
+"""
+Wrapper script to invoke another script running in a virtual environment.
+Because bash does not handle single-quoted (ex. JSON) arguments well.
+"""
 
-# copy this script to /app/bin
+import sys
+import os
 
-/app/local/aws-batch-wrapper/env/bin/python3 /app/local/aws-batch-wrapper/run_batch_jobs.py $*
+python3 = "/app/local/aws-batch-wrapper/env/bin/python3"
+prog = "/app/local/aws-batch-wrapper/run_batch_jobs.py"
+
+
+args = [python3, prog]
+sargs = sys.argv
+del sargs[0]
+args.extend(sargs)
+
+os.execv(python3, args)
