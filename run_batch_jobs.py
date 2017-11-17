@@ -118,18 +118,22 @@ def main(): # pylint: disable=too-many-locals, too-many-branches, too-many-state
         sys.path.append(module_dir)
         module = __import__(module_name)
         func = getattr(module, func_name)
+    jobs = []
     for iteration in range(1, args.numjobs+1):
         job_template = template
         job_template['jobName'] = "{}-{}-{}".format(user, args.name, iteration)
         if func:
             job_template = func(job_template, iteration)
         if args.json:
-            print(json.dumps(job_template, indent=4))
-            print("\n\n")
+            jobs.append(job_template)
         else:
             job = batch.submit_job(**job_template)
             del job['ResponseMetadata']
-            print(json.dumps(job, indent=4))
+            jobs.append(job)
+    if args.json and len(jobs) == 1: # print output suitable for aws cli
+        print(json.dumps(jobs[0], indent=4))
+    else:
+        print(json.dumps(jobs, indent=4))
 
 if __name__ == "__main__":
     main()
