@@ -7,15 +7,18 @@ import argparse
 import os
 import sys
 import json
+import datetime
 
 # third-party imports
 import boto3
 
 
 
-def main():
+def main(): # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     "do the work"
 
+    now = datetime.datetime.now()
+    timestamp = now.strftime("%Y%m%d%H%M%S")
     user = os.getenv("USER")
     batch = boto3.client("batch")
     description = ["Start a set of AWS Batch jobs.",
@@ -56,7 +59,8 @@ def main():
                         help="Number of retry attempts, if overriding job definition.")
     parser.add_argument("-c", "--command",
                         help="\n".join(["Command, if overriding job definition. Example:",
-                                        '\'["echo", "hello world"]\''])) # TODO some kind of interpolation here?
+                                        # TODO some kind of interpolation here?
+                                        '\'["echo", "hello world"]\'']))
     parser.add_argument("-e", "--environment",
                         help="\n".join(["Environment to replace placeholders in job definition.",
                                         "Format as a single-quoted JSON object/dictionary."]))
@@ -72,6 +76,12 @@ def main():
         container_overrides['memory'] = args.memory
     if args.command:
         container_overrides['command'] = args.command
+    container_overrides['env'] = []
+    container_overrides['env'].append(dict(name='JOB_GROUP_NAME',
+                                           value=args.job_group_name))
+    container_overrides['env'].append(dict(name='JOB_GROUP_USER',
+                                           value=user))
+
     if args.environment:
         try:
             env = json.loads(args.environment)
@@ -81,7 +91,7 @@ def main():
         if not env.__class__ == list: # could do further checking here....
             print("Environment argument is not a JSON list!")
             sys.exit(1)
-        container_overrides['environment'] = env
+        container_overrides['environment'].extend(env)
     # TODO make sure job name is valid length & has no invalid characters
     template = dict(jobName=args.name, jobQueue=args.queue, jobDefinition=args.jobdef,
                     containerOverrides=container_overrides)
