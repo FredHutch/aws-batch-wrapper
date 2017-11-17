@@ -31,7 +31,7 @@ def main(): # pylint: disable=too-many-locals, too-many-branches, too-many-state
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.prog = parser.prog.replace(".py", "")
 
-    parser.add_argument("-q", "--queue", default="small",
+    parser.add_argument("-q", "--queue", default="medium",
                         help="Queue Name")
     parser.add_argument("-d", "--jobdef", default="hello:2",
                         help="Job definition name:version.")
@@ -76,11 +76,11 @@ def main(): # pylint: disable=too-many-locals, too-many-branches, too-many-state
         container_overrides['memory'] = args.memory
     if args.command:
         container_overrides['command'] = args.command
-    container_overrides['env'] = []
-    container_overrides['env'].append(dict(name='JOB_GROUP_NAME',
-                                           value=args.job_group_name))
-    container_overrides['env'].append(dict(name='JOB_GROUP_USER',
-                                           value=user))
+    container_overrides['environment'] = []
+    container_overrides['environment'].append(dict(name='JOB_GROUP_NAME',
+                                                   value=args.job_group_name))
+    container_overrides['environment'].append(dict(name='JOB_GROUP_USER',
+                                                   value=user))
 
     if args.environment:
         try:
