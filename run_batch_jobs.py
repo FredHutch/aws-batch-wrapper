@@ -36,11 +36,12 @@ def main():
                         help="Number of jobs to run.")
     parser.add_argument("--name", default="sample_job",
                         help="Name of job group (your username and job number will be injected).")
+    parser.add_argument("-g", "--job-group-name", default="job_group_{}".format(timestamp))
     parser.add_argument("-f", "--func",
                         help="\n".join(["Python path to a function to customize job,",
                                         "see link above for full docs. Example: myscript.myfunc"]))
-    parser.add_argument("-j", "--json",
-                        help="\n".join(["Output JSON instead of running jobs. JSON can be used",
+    parser.add_argument("-j", "--json", action='store_true',
+                        help="\n".join(["Output JSON instead of starting jobs. JSON can be used",
                                         "with `aws batch submit-job --cli-input-json`.",
                                         "Makes most sense with `--numjobs 1`."]))
     parser.add_argument("-x", "--cpus",
@@ -107,20 +108,18 @@ def main():
         sys.path.append(module_dir)
         module = __import__(module_name)
         func = getattr(module, func_name)
-    jobs = []
     for iteration in range(1, args.numjobs+1):
         job_template = template
         job_template['jobName'] = "{}-{}-{}".format(user, args.name, iteration)
         if func:
             job_template = func(job_template, iteration)
         if args.json:
-            print(json.dumps(job_template), indent=4)
+            print(json.dumps(job_template, indent=4))
             print("\n\n")
         else:
             job = batch.submit_job(**job_template)
             del job['ResponseMetadata']
-            jobs.append(job)
-    print(json.dumps(jobs, indent=4))
+            print(json.dumps(job, indent=4))
 
 if __name__ == "__main__":
     main()
