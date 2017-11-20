@@ -39,7 +39,6 @@ def main(): # pylint: disable=too-many-locals, too-many-branches, too-many-state
                         help="Number of jobs to run.")
     parser.add_argument("--name", default="sample_job",
                         help="Name of job group (your username and job number will be injected).")
-    parser.add_argument("-g", "--job-group-name", default="job_group_{}".format(timestamp))
     parser.add_argument("-f", "--func",
                         help="\n".join(["Python path to a function to customize job,",
                                         "see link above for full docs. Example: myscript.myfunc"]))
@@ -78,7 +77,7 @@ def main(): # pylint: disable=too-many-locals, too-many-branches, too-many-state
         container_overrides['command'] = args.command
     container_overrides['environment'] = []
     container_overrides['environment'].append(dict(name='JOB_GROUP_NAME',
-                                                   value=args.job_group_name))
+                                                   value=args.name))
     container_overrides['environment'].append(dict(name='JOB_GROUP_USER',
                                                    value=user))
 
