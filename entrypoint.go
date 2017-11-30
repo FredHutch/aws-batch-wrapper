@@ -10,13 +10,12 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"syscall"
 )
 
 var (
-	ebsmountExe string = "echo" // FIXME change this to ebsmount when ready
-	wantScratch bool   = false
-	// scratchSize int64  = 0
+	batchitExe = "echo" // FIXME change this to batchit when ready
 )
 
 // entrypoint of the entrypoint.
@@ -44,37 +43,99 @@ func main() {
 	// time between starting jobs. otherwise we could run into
 	// RequestLimitExceeded errors when creating volumes
 
-	// exitcode := runcmd("testt", []string{"arg1", "arg2"})
-	// fmt.Printf("Exit code was %d.\n", exitcode)
-
-	// output := getCmdOutput("echo", []string{"foobar"})
-	// fmt.Printf("Output:\n%s\n", output)
-	if os.Getenv("SCRATCH_SIZE") != "" {
-		wantScratch = true
-		if scratchSize, err := strconv.ParseInt(os.Getenv("SCRATCH_SIZE"),
-			10, 64); err != nil {
-			fmt.Printf("SCRATCH_SIZE environment variable %s is not a number!\n",
-				os.Getenv("SCRATCH_SIZE"))
-			os.Exit(1)
-		} else {
-			fmt.Printf("yay, your scratch size is %d GB.\n", scratchSize)
-		}
-		// fmt.Printf("yay, your scratch size is %d GB.\n", scratchSize)
-
+	var scratchSize = getenv("SCRATCH_SIZE", "", true)
+	var volIds string
+	if scratchSize != "" {
+		volIds = makeScratchSpace(scratchSize)
 	}
+
+	var retVal int
+	if wantFetchAndRun() {
+		retVal = runcmd("fetch_and_run.sh", []string{})
+	} else {
+		prog := os.Args[0]
+		progArgs := os.Args[1:]
+		retVal = runcmd(prog, progArgs)
+	}
+
+	// tear down volumes
+	if volIds != "" {
+		progArgs := strings.Split(volIds, " ")
+		getCmdOutput(batchitExe, progArgs)
+	}
+
+	// exit with retVal
+	os.Exit(retVal)
+
+}
+
+func wantFetchAndRun() bool {
+	vars := []string{"BATCH_FILE_TYPE", "BATCH_FILE_S3_URL"}
+	for i := 0; i < 2; i++ {
+		if getenv(vars[i], "", false) == "" {
+			return false
+		}
+	}
+	return true
+}
+
+// Get an environment variable or a default if not set.
+func getenv(key string, defaultValue string, mustBeNumber bool) string {
+	val := os.Getenv("KEY")
+	if val == "" {
+		val = defaultValue
+	}
+	if mustBeNumber {
+		_, err := strconv.Atoi(val)
+		if err != nil {
+			if val != "" {
+				fmt.Printf("Warning: %s is not a number, ignoring!\n", val)
+			}
+			return ""
+		}
+	}
+	return val
+}
+
+type ebsMountArgs struct {
+	Size       string
+	MountPoint string
+	VolumeType string
+	FSType     string
+	Iops       string
+	N          string
+	Keep       string
+}
+
+// Create a scratch volume using batchit
+func makeScratchSpace(scratchSize string) string {
+	var args ebsMountArgs
+	args.Size = scratchSize
+	args.MountPoint = "/scratch"
+	args.N = "1"
+	sz, _ := strconv.Atoi(args.Size) // we already checked that it's a number
+	if sz > 200 {
+		args.N = "2"
+	}
+
+	progArgs := []string{"ebsmount", "--size", args.Size, "--mountpoint",
+		args.MountPoint, "-n", args.N}
+	volIds := getCmdOutput(batchitExe, progArgs)
+	return volIds
+
 }
 
 // Run a command and get its output.
 // Exit if the command fails (may change this...)
 func getCmdOutput(cmdName string, cmdArgs []string) string {
+	fmt.Printf("getCmdOutput: cmdName is %s and cmdArgs is %v", cmdName, cmdArgs)
 	out, err := exec.Command(cmdName, cmdArgs...).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	return string(out[:len(out)])
-	// ret := fmt.Printf("%s", out)
-	// fmt.Println(ret)
-	// return "foo"
+	ret := string(out[:len(out)])
+	fmt.Printf("getCmdOutput: returning %s\n", ret)
+	return ret
 }
 
 // Run a command and display its stdout and stderr (combined).
@@ -129,4 +190,14 @@ func runcmd(cmdName string, cmdArgs []string) int {
 	// }
 	// return 0
 	return -1 // should never get here
+}
+
+// does a list of strings contain a given string?
+func contains(haystack []string, needle string) bool {
+	for _, h := range haystack {
+		if h == needle {
+			return true
+		}
+	}
+	return false
 }
