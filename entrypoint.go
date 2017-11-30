@@ -47,6 +47,7 @@ func main() {
 	var volIds string
 	if scratchSize != "" {
 		volIds = makeScratchSpace(scratchSize)
+		defer tearDownVolumes(volIds)
 	}
 
 	var retVal int
@@ -58,15 +59,14 @@ func main() {
 		retVal = runcmd(prog, progArgs)
 	}
 
-	// tear down volumes
-	if volIds != "" {
-		progArgs := strings.Split(volIds, " ")
-		getCmdOutput(batchitExe, progArgs)
-	}
-
 	// exit with retVal
 	os.Exit(retVal)
 
+}
+
+func tearDownVolumes(volIds string) {
+	progArgs := strings.Split(volIds, " ")
+	getCmdOutput(batchitExe, progArgs)
 }
 
 func wantFetchAndRun() bool {
