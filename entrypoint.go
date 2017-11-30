@@ -5,6 +5,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -15,7 +16,9 @@ import (
 )
 
 var (
-	batchitExe = "echo" // FIXME change this to batchit when ready
+	batchitExe = "batchit" // comment this out in testing
+
+// batchitExe = "echo" // comment this out in 'production'
 )
 
 // entrypoint of the entrypoint.
@@ -54,8 +57,13 @@ func main() {
 	if wantFetchAndRun() {
 		retVal = runcmd("fetch_and_run.sh", []string{})
 	} else {
-		prog := os.Args[0]
-		progArgs := os.Args[1:]
+		argLen := len(os.Args)
+		if argLen < 2 {
+			fmt.Println("You didn't specify a command! Exiting.")
+			os.Exit(1)
+		}
+		prog := os.Args[1]
+		progArgs := os.Args[2:]
 		retVal = runcmd(prog, progArgs)
 	}
 
@@ -66,7 +74,11 @@ func main() {
 
 func tearDownVolumes(volIds string) {
 	progArgs := strings.Split(volIds, " ")
-	getCmdOutput(batchitExe, progArgs)
+	resultCode, _ := getCmdOutput(batchitExe, progArgs)
+	if resultCode != 0 {
+		fmt.Printf("Failed to tear down volumes, exit code %d, exiting.\n", resultCode)
+		os.Exit(1)
+	}
 }
 
 func wantFetchAndRun() bool {
@@ -81,15 +93,15 @@ func wantFetchAndRun() bool {
 
 // Get an environment variable or a default if not set.
 func getenv(key string, defaultValue string, mustBeNumber bool) string {
-	val := os.Getenv("KEY")
-	if val == "" {
+	val, ok := os.LookupEnv(key)
+	if !ok {
 		val = defaultValue
 	}
+
 	if mustBeNumber {
 		_, err := strconv.Atoi(val)
 		if err != nil {
-			if val != "" {
-				fmt.Printf("Warning: %s is not a number, ignoring!\n", val)
+			if !ok {
 			}
 			return ""
 		}
@@ -120,15 +132,21 @@ func makeScratchSpace(scratchSize string) string {
 
 	progArgs := []string{"ebsmount", "--size", args.Size, "--mountpoint",
 		args.MountPoint, "-n", args.N}
-	volIds := getCmdOutput(batchitExe, progArgs)
-	return volIds
+	retCode, volIds := getCmdOutput(batchitExe, progArgs)
+	if retCode != 0 {
+		fmt.Printf("ebsmount command failed with error %d, exiting.\n", retCode)
+		os.Exit(1)
+	}
 
+	return volIds
 }
 
 // Run a command and get its output.
 // Exit if the command fails (may change this...)
-func getCmdOutput(cmdName string, cmdArgs []string) string {
-	fmt.Printf("getCmdOutput: cmdName is %s and cmdArgs is %v", cmdName, cmdArgs)
+func getCmdOutputOld(cmdName string, cmdArgs []string) string {
+	//FIXME need to see full output (stdout and stderr) while returning stdout
+	// and if we can do that, we only need 1 function for running commands...
+	fmt.Printf("getCmdOutput: cmdName is %s and cmdArgs is %v\n", cmdName, cmdArgs)
 	out, err := exec.Command(cmdName, cmdArgs...).Output()
 	if err != nil {
 		log.Fatal(err)
@@ -136,6 +154,67 @@ func getCmdOutput(cmdName string, cmdArgs []string) string {
 	ret := string(out[:len(out)])
 	fmt.Printf("getCmdOutput: returning %s\n", ret)
 	return ret
+}
+
+func getCmdOutput(cmdName string, cmdArgs []string) (resultCode int, output string) {
+	// docker build current directory
+	// cmdName := "testt"
+	// cmdArgs := []string{"build", "."}
+
+	var buf bytes.Buffer
+
+	log.Printf("runcmd: Preparing to run %s with arguments %s.\n",
+		cmdName, cmdArgs)
+	cmd := exec.Command(cmdName, cmdArgs...)
+	cmdReader, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for Cmd", err)
+		os.Exit(1)
+	}
+	//cmd.Stderr = cmd.Stdout
+
+	stderrReader, err := cmd.StderrPipe()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating StderrPipe for Cmd", err)
+		os.Exit(1)
+	}
+
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+		for scanner.Scan() {
+			fmt.Printf("STDOUT: %s\n", scanner.Text())
+			buf.WriteString(scanner.Text())
+			buf.WriteString("\n")
+		}
+	}()
+
+	scannerStderr := bufio.NewScanner(stderrReader)
+	go func() {
+		for scannerStderr.Scan() {
+			fmt.Printf("STDERR: %s\n", scannerStderr.Text())
+		}
+	}()
+
+	err = cmd.Start()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
+		//os.Exit(1)
+	}
+
+	err = cmd.Wait()
+	output = strings.TrimSuffix(buf.String(), "\n")
+
+	if exiterr, ok := err.(*exec.ExitError); ok {
+		if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+			log.Printf("Exit Status: %d", status.ExitStatus())
+			return status.ExitStatus(), output
+		}
+	} else {
+		log.Printf("Exit Status: 0")
+		return 0, output
+	}
+
+	return -1, output // should never get here
 }
 
 // Run a command and display its stdout and stderr (combined).
@@ -147,7 +226,7 @@ func runcmd(cmdName string, cmdArgs []string) int {
 	// cmdName := "testt"
 	// cmdArgs := []string{"build", "."}
 
-	log.Printf("Preparing to run %s with arguments %s.\n",
+	log.Printf("runcmd: Preparing to run %s with arguments %s.\n",
 		cmdName, cmdArgs)
 	cmd := exec.Command(cmdName, cmdArgs...)
 	cmdReader, err := cmd.StdoutPipe()
@@ -178,17 +257,10 @@ func runcmd(cmdName string, cmdArgs []string) int {
 			return status.ExitStatus()
 		}
 	} else {
-		// log.Fatalf("cmd.Waitttt: %v", err)
 		log.Printf("Exit Status: 0")
 		return 0
 	}
 
-	// if err != nil {
-	// 	fmt.Fprintln(os.Stderr, "Error waiting for Cmd", err)
-	// 	//os.Exit(1)
-	// 	return
-	// }
-	// return 0
 	return -1 // should never get here
 }
 
