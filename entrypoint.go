@@ -72,7 +72,9 @@ func main() {
 }
 
 func tearDownVolumes(volIds string) {
-	progArgs := strings.Split(volIds, " ")
+	progArgs0 := []string{"ddv"}
+	progArgs1 := strings.Split(volIds, " ")
+	progArgs := append(progArgs0, progArgs1...)
 	resultCode, _ := getCmdOutput(batchitExe, progArgs)
 	if resultCode != 0 {
 		fmt.Printf("Failed to tear down volumes, exit code %d, exiting.\n", resultCode)
