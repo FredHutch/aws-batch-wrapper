@@ -45,6 +45,8 @@ func main() {
 	// there should be an option to sleep for some period of
 	// time between starting jobs. otherwise we could run into
 	// RequestLimitExceeded errors when creating volumes
+	retcode := 0
+	defer func() { os.Exit(retcode) }()
 
 	var scratchSize = getenv("SCRATCH_SIZE", "", true)
 	var volIds string
@@ -53,23 +55,20 @@ func main() {
 		defer tearDownVolumes(volIds)
 	}
 
-	var retVal int
 	if wantFetchAndRun() {
-		retVal = runcmd("fetch_and_run.sh", []string{})
+		retcode = runcmd("fetch_and_run.sh", []string{})
 	} else {
 		argLen := len(os.Args)
 		if argLen < 2 {
 			fmt.Println("You didn't specify a command! Exiting.")
-			os.Exit(1)
+			retcode = 1
+			return
 		}
 		prog := os.Args[1]
 		progArgs := os.Args[2:]
-		retVal = runcmd(prog, progArgs)
+		retcode = runcmd(prog, progArgs)
 	}
-
-	// exit with retVal
-	os.Exit(retVal)
-
+	fmt.Printf("Exiting with return code %d.\n", retcode)
 }
 
 func tearDownVolumes(volIds string) {
