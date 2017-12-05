@@ -24,9 +24,13 @@ import requests
 import config
 import utils
 
+DEPTS = ['adm-scicomp', 'bs', 'crd', 'hb', 'hdc', 'phs', 'sr', 'sr-genomics', 'vidd']
+
 
 def pi_validate(piname, pat=re.compile(r'^[a-z]{1,20}-[a-z]{1}$', re.UNICODE)):
     """Ensure pi-name matches regex and actual list of PIs."""
+    if piname in DEPTS:
+        return piname
     if not pat.match(piname):
         errmsg = ["",
                   "PI name should be lowercase last name, dash, and first initial.",
@@ -49,9 +53,16 @@ def main():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.prog = parser.prog.replace(".py", "")
     parser.add_argument("-p", "--pi-name", required=True, type=pi_validate,
-                        help="Your PI's last name, a dash, and first initial. Example: doe-j")
+                        help="\n".join(["Your PI's last name, a dash, and first initial.",
+                                        "Example: doe-j.",
+                                        "Divisional user example: adm-scicomp."]))
     args = parser.parse_args()
-    job_role_arn = "arn:aws:iam::{}:role/fh-pi-{}-batchtask".format(config.ACCOUNT_NUMBER,
+    if args.pi_name in DEPTS:
+        user_type = "div"
+    else:
+        user_type = "pi"
+    job_role_arn = "arn:aws:iam::{}:role/fh-{}-{}-batchtask".format(config.ACCOUNT_NUMBER,
+                                                                    user_type,
                                                                     args.pi_name)
     image = utils.get_latest_docker_image()
     template = dict(jobDefinitionName="", type="container",
