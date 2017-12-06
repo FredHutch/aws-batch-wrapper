@@ -126,10 +126,11 @@ func makeScratchSpace(scratchSize string) string {
 	args.Size = scratchSize
 	args.MountPoint = "/scratch"
 	args.N = "1"
-	sz, _ := strconv.Atoi(args.Size) // we already checked that it's a number
-	if sz > 200 {
-		args.N = "2"
-	}
+	// Let's not use >1 volume for now until problems are sorted out
+	// sz, _ := strconv.Atoi(args.Size) // we already checked that it's a number
+	// if sz > 200 {
+	// 	args.N = "2"
+	// }
 
 	progArgs := []string{"ebsmount", "--size", args.Size, "--mountpoint",
 		args.MountPoint, "-n", args.N}
