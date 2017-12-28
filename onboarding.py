@@ -19,7 +19,7 @@ import config
 
 
 
-def main(): # pylint: disable=too-many-locals
+def main(): # pylint: disable=too-many-locals, too-many-statements
     "Do the work."
     if not len(sys.argv) == 3:
         print("usage: {} hutchnet-id-of-user pi_lastname_firstinitial".format(sys.argv[0]))
@@ -94,11 +94,15 @@ def main(): # pylint: disable=too-many-locals
                                   Action=["iam:PassRole"],
                                   Resource=[pi_batch_role_arn])])
     policy_json = json.dumps(policy)
-    policy_result = iam.create_policy(PolicyName=pi_passrole_policy_name,
-                                      PolicyDocument=policy_json,
-                                      Description=\
-        'Allows users in {} group to pass S3 access role.'.format(pi))
-    role_policy_arn = policy_result['Policy']['Arn']
+    try:
+        policy_result = iam.create_policy(PolicyName=pi_passrole_policy_name,
+                                          PolicyDocument=policy_json,
+                                          Description=\
+            'Allows users in {} group to pass S3 access role.'.format(pi))
+        role_policy_arn = policy_result['Policy']['Arn']
+    except iam.exceptions.EntityAlreadyExistsException:
+        print("Policy {} already exists....".format(pi_passrole_policy_name))
+        role_policy_arn = "arn:aws:iam::064561331775:policy/" + pi_passrole_policy_name
 
     # add policy to user
     iam.attach_user_policy(UserName=user, PolicyArn=role_policy_arn)
