@@ -22,7 +22,7 @@ import config
 def main(): # pylint: disable=too-many-locals, too-many-statements
     "Do the work."
     if not len(sys.argv) == 3:
-        print("usage: {} hutchnet-id-of-user pi_lastname_firstinitial".format(sys.argv[0]))
+        print("usage: {} hutchnet-id-of-user pi_lastname-firstinitial".format(sys.argv[0]))
         print("Example: {} jdoe smith-b".format(sys.argv[0]))
         sys.exit(1)
     user = sys.argv[1]
